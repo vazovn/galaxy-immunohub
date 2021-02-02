@@ -1,0 +1,118 @@
+# https://galaxyproject.github.io/training-material/topics/admin/tutorials/ansible-galaxy/tutorial.html#cloning-galaxy
+
+# host variables
+ansible_connection: ssh
+ansible_ssh_private_key_file: "/uio/kant/usit-ft-u1/nikolaiv/galaxy-ImmunoHub-playbooks/certificates/ssh_certs/id_rsa"
+become: yes
+become_user: "root"
+ansible_user: "nikolaiv"
+ansible_become_method: sudo
+ansible_become_pass: "{{ immunohub_server_sudo_pass }}"
+
+# PostgreSQL
+postgresql_objects_users:
+  - name: galaxy
+    password: null
+postgresql_objects_databases:
+  - name: galaxy
+    owner: galaxy
+postgresql_pg_hba_local_socket : true
+
+# Galaxy
+# compare the two following with default/main.yaml (false there)
+galaxy_create_user: no
+galaxy_separate_privileges: no
+galaxy_manage_paths: yes
+galaxy_manage_mutable_setup: yes
+galaxy_manage_database: yes
+galaxy_fetch_dependencies: yes
+galaxy_build_client: yes
+galaxy_layout: root-dir
+galaxy_root: /srv/galaxy # from the galaxy tutorial - to change it - use 'galaxy_server_dir' instead
+galaxy_user: {name: galaxy, shell: /bin/bash}
+galaxy_commit_id: release_19.05 # from the galaxy tutorial
+galaxy_config_style: yaml
+galaxy_force_checkout: true
+galaxy_tool_dependency_dir: "{{ galaxy_mutable_data_dir }}/dependencies"
+miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
+
+
+# NGINX files
+nginx_custom_conf_files_dir: /etc/nginx/conf.d
+nginx_conf_files_src_dir: files/nginx
+
+galaxy_config: # from the galaxy tutorial
+  galaxy:
+    brand: "Immunohub"
+    admin_users: vazovn@abv.bg,nikolaiv@uio.no,n.a.vazov@usit.uio.no,radmilko@ifi.uio.no,milenpa@student.matnat.uio.no,lonnekes@student.matnat.uio.no,f.l.m.bernal@usit.uio.no
+    database_connection: "postgresql:///galaxy?host=/var/run/postgresql"
+    # changes made on 15 sept 2020
+    #file_path: "/srv/galaxy_data"
+    file_path: "/storage/galaxy_data/files"
+    new_file_path: "/storage/galaxy_data/tmp"
+    template_cache_path: "/storage/galaxy_data/compiled_templates"
+    job_working_directory: "/storage/galaxy_data/jobs_directory"
+    check_migrate_tools: false
+    shed_tool_data_dir: "{{ galaxy_mutable_data_dir }}/tool-data"
+    ## NEW 23 march added 'galaxy_tool_dependency_dir' to galaxy vars above 
+    ## or in tasks/layout.yml
+    integrated_tool_panel_config: "integrated_tool_panel.xml"
+    dependency_resolvers_config_file: "config/dependency_resolvers_conf.xml"
+    conda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
+    conda_exec: "{{ galaxy_tool_dependency_dir }}/_conda/bin/conda"
+    conda_debug: "false"
+    conda_ensure_channels: "iuc,conda-forge,bioconda,defaults,imperial-college-research-computing"
+    conda_auto_install: "false"
+    conda_auto_init: "true"
+    tool_dependency_cache_dir: "{{ galaxy_tool_dependency_dir }}/_cache"
+    allow_user_impersonation: "true"
+    cleanup_job: never
+   # Mail configuration added 20 Aug 2020
+    smtp_server: smtp.uio.no
+   # Added for Radka 5.06.2020 modified for reordering 6.11.2020
+    tool_data_path: "{{ galaxy_server_dir }}/tool-data"
+    tool_config_file: "{{ galaxy_server_dir }}/config/immunohub_tool_conf.xml,{{ galaxy_mutable_data_dir }}/config/shed_tool_conf.xml"
+   # Added for Geir-Kjetil on 14 sept 2020
+    error_email_to: 'geirkjetilsandve1+injbqoyi5aojs59jcqtz@boards.trello.com'
+  uwsgi:
+    # Default values
+    socket: 127.0.0.1:8080
+    buffer-size: 16384
+    processes: 1
+    threads: 4
+    offload-threads: 2
+    static-map:
+      - /static/style={{ galaxy_server_dir }}/static/style/blue
+      - /static={{ galaxy_server_dir }}/static
+      - /static/scripts/={{ galaxy_server_dir }}/static/scripts
+      - /client={{ galaxy_server_dir }}/client
+    master: true
+    virtualenv: "{{ galaxy_venv_dir }}"
+    pythonpath: "{{ galaxy_server_dir }}/lib"
+    module: galaxy.webapps.galaxy.buildapp:uwsgi_app()
+    thunder-lock: true
+    die-on-term: true
+    hook-master-start:
+      - unix_signal:2 gracefully_kill_them_all
+      - unix_signal:15 gracefully_kill_them_all
+    py-call-osafterfork: true
+    enable-threads: true
+    # Our additions
+    mule:
+      - lib/galaxy/main.py
+      - lib/galaxy/main.py
+    farm: job-handlers:1,2
+
+## Copy nginx conf files
+nginx_conf_files:
+  - src: "{{ nginx_conf_files_src_dir}}/immunohub.conf"
+    dest: "{{ nginx_custom_conf_files_dir}}/immunohub.conf"
+      
+
+# Automatically restart Galaxy by calling a handler named 'Restart
+# Galaxy', whenever the server changes.
+
+# systemd
+galaxy_systemd_mode: mule
+galaxy_zergpool_listen_addr: 127.0.0.1:8080
+galaxy_restart_handler_name: "Restart Galaxy"

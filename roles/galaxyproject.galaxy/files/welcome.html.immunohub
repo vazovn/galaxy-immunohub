@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="style/base.css" type="text/css" />
+    </head>
+    <body class="m-0">
+        <div class="jumbotron rounded-0">
+            <div class="container">
+                <h2>Welcome to immunoHub</h2>
+                <h3>the local service hub and tool ecosystem to improve access to computational immune receptor analyses for life science researchers at UiO and OUS</h3>
+            </div>
+        </div>
+        <div class="container">
+            <p class="lead">
+		With great help from <a target="_blank" class="reference" href="https://www.usit.uio.no/">USIT</a> 
+		and <a target="_blank" class="reference" href="https://elixir.no/">ELIXIR</a>
+		Oslo, we are setting up a web-based platform that improves accessibility to and convenience of immune receptor analysis
+		for computational immunologists and life science researchers at UiO and OUS.
+            </p>
+	</div>
+	<div class="container">
+            <p class="lead">
+		We are integrating a variety of tools for processing and analysis of immune receptors into one platform based on the 
+		<a target="_blank" class="reference" href="http://galaxyproject.org/">Galaxy framework</a>, 
+		developing web-based interfaces for each tool and streamlining their interoperability. This web-based platform not only makes the 
+		functionality available to a new segment of life science users, but also saves efforts related to installation and tool interoperability 
+		for computationally experienced researchers. As a final bonus, the Galaxy platform has strong built-in support to improve transparency, 
+		collaboration and reproducibility.
+	    </p>
+ 	    <p class="lead">
+		The immunoHub platform is planned to be fully operational by December 2020.  Development has progressed well and several tools are already in place, 
+		so please go ahead already and use <a target="_blank" class="reference" href="http://129.240.189.178:8080">immunoHub</a>.
+            </p>	
+	    <p>
+		Also, please <a href="mailto:geirksa@ifi.uio.no">contact us</a> if you are interested in acting as a pilot user in the development phase.
+	    </p>
+            <footer>
+                The <a target="_blank" class="reference" href="http://galaxyproject.org/">Galaxy Project</a>
+                is supported in part by <a target="_blank" class="reference" href="http://www.genome.gov">NHGRI</a>,
+                <a target="_blank" class="reference" href="http://www.nsf.gov">NSF</a>,
+                <a target="_blank" class="reference" href="http://www.huck.psu.edu">The Huck Institutes of the Life Sciences</a>,
+                <a target="_blank" class="reference" href="http://www.ics.psu.edu">The Institute for CyberScience at Penn State</a>,
+                and <a target="_blank" class="reference" href="http://www.jhu.edu/">Johns Hopkins University</a>.
+            </footer>
+        </div>
+    </body>
+</html>

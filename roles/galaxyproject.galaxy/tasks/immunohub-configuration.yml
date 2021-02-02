@@ -1,0 +1,35 @@
+---
+# Nikolay - Edit the tool shed 
+
+# Check which variables are inśtantiated
+- debug:
+    var: galaxy_config_dir
+- debug:
+    msg: "Galaxy server directory is {{ lookup('vars', 'galaxy_server_dir') }}"
+- debug:
+    msg: "Galaxy mutable directory is {{ lookup('vars', 'galaxy_mutable_data_dir') }}"
+
+- name: Insert New block in tool_shed
+  lineinfile:
+    path: "{{ galaxy_server_dir }}/config/tool_sheds_conf.xml.sample"
+    backup: yes
+    insertbefore: '^</tool_sheds>'
+    line: '      <tool_shed name="NELS Tool Shed" url="https://galaxy-ntnu.bioinfo.no/toolshed_nels/"/>'
+
+
+# Copy the customized tool_conf.xml file for immunohub server
+- name: Copy immunohubs tool conf file using shed_tool_conf.xml
+  copy:
+    src: "{{ role_path }}/files/shed_tool_conf.xml"
+    dest: "{{ galaxy_mutable_data_dir }}/config/shed_tool_conf.xml"
+    
+# Copy the customized tool_conf.xml file for immunohub server
+- name: Copy immunohubs tool conf file
+  copy:
+    src: "{{ role_path }}/files/immunohub_tool_conf.xml"
+    dest: "{{ galaxy_server_dir }}/config/immunohub_tool_conf.xml"
+    
+    
+  remote_user: "{{ galaxy_remote_users.galaxy | default(omit) }}"
+  become: "{{ true if galaxy_become_users.galaxy is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.galaxy | default(ansible_user_id) }}"

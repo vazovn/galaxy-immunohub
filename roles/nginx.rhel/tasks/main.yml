@@ -1,0 +1,18 @@
+---
+
+- name: Install Nginx in RHEL
+  yum:
+    pkg: nginx
+  notify:
+    - start nginx
+        
+# Copy nginx conf files
+- name: Install nginx conf files
+  copy:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+  with_items: "{{ nginx_conf_files }}"
+  
+# Restart nginx
+- name: Restart nginx
+  service: name=nginx state=restarted
