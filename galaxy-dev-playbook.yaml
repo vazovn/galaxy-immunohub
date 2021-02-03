@@ -20,9 +20,9 @@
       become: true
       become_user: postgres
     - geerlingguy.pip
-    - galaxyproject.galaxy
+    - role: galaxyproject.galaxy
       become: true
-    - nginx.rhel
+    - role: nginx.rhel
       become: true
     - selinux.galaxy
     - usegalaxy_eu.galaxy_systemd
