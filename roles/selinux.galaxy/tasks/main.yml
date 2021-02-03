@@ -9,18 +9,25 @@
 # equivalent of
 # 1) semanage fcontext -a -t var_t "/srv/galaxy(/.*)?"
 # 2) restorecon -Rv /srv/galaxy
-- name: Set selinux-fcontext for /srv/galaxy
+- name: Set selinux-fcontext for /srv/galaxy-dev
   sefcontext:
-    target: '/srv/galaxy(/.*)?'
+    target: '/srv/galaxy-dev(/.*)?'
     setype: var_t
     state: present
 
-- name: Set selinux-fcontext for /storage/galaxy_data
+- name: Set selinux-fcontext for /storage/galaxy_dev_data
   sefcontext:
-    target: '/storage/galaxy_data(/.*)?'
+    target: '/storage/galaxy_dev_data(/.*)?'
     setype: var_t
     seuser: system_u
     state: present
+
+# Run in case the above commands fail
+- name: Run restorecon -Rv just in case if sefcontext fails
+  command: "{{ item }}"
+  with_items:
+    - "restorecon -Rv /storage/galaxy_dev_data/"
+    - "restorecon -Rv /srv/galaxy-dev/"
 
 
 # in ansible that will be something like this, then you will kind off have a sort of documentation on what is done as well, so I recomend putting it ansible (you can do it in the terminal as well).
@@ -41,14 +48,14 @@
   file:  dest=/tmp/selinux state=directory
 
 - name:  "Copy selinux files"
-  copy:  src="{{ role_path }}/files/galaxy_selinux.te" dest=/tmp/selinux
+  copy:  src="{{ role_path }}/files/galaxy-dev_selinux.te" dest=/tmp/selinux
 
 - name: "Check modules"
-  shell: "checkmodule -M -m -o /tmp/selinux/galaxy_selinux.mod /tmp/selinux/galaxy_selinux.te"
+  shell: "checkmodule -M -m -o /tmp/selinux/galaxy-dev_selinux.mod /tmp/selinux/galaxy-dev_selinux.te"
 
 - name: "Package modules"
-  shell: "semodule_package -o /tmp/selinux/galaxy_selinux.pp -m /tmp/selinux/galaxy_selinux.mod"
+  shell: "semodule_package -o /tmp/selinux/galaxy-dev_selinux.pp -m /tmp/selinux/galaxy-dev_selinux.mod"
 
 - name: "Install modules"
-  shell: "semodule -i /tmp/selinux/galaxy_selinux.pp"
+  shell: "semodule -i /tmp/selinux/galaxy-dev_selinux.pp"
 

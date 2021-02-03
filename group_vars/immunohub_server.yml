@@ -14,7 +14,7 @@ postgresql_objects_users:
   - name: galaxy
     password: null
 postgresql_objects_databases:
-  - name: galaxy
+  - name: galaxy-dev
     owner: galaxy
 postgresql_pg_hba_local_socket : true
 
@@ -28,13 +28,14 @@ galaxy_manage_database: yes
 galaxy_fetch_dependencies: yes
 galaxy_build_client: yes
 galaxy_layout: root-dir
-galaxy_root: /srv/galaxy # from the galaxy tutorial - to change it - use 'galaxy_server_dir' instead
+galaxy_root: /srv/galaxy-dev # from the galaxy tutorial - to change it - use 'galaxy_server_dir' instead
 galaxy_user: {name: galaxy, shell: /bin/bash}
-galaxy_commit_id: release_19.05 # from the galaxy tutorial
+galaxy_commit_id: release_20.05 # from the galaxy tutorial
 galaxy_config_style: yaml
 galaxy_force_checkout: true
 galaxy_tool_dependency_dir: "{{ galaxy_mutable_data_dir }}/dependencies"
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
+miniconda_version: "4.6.14"
 
 
 # NGINX files
@@ -43,15 +44,15 @@ nginx_conf_files_src_dir: files/nginx
 
 galaxy_config: # from the galaxy tutorial
   galaxy:
-    brand: "Immunohub"
+    brand: "Immunohub dev instance"
     admin_users: vazovn@abv.bg,nikolaiv@uio.no,n.a.vazov@usit.uio.no,radmilko@ifi.uio.no,milenpa@student.matnat.uio.no,lonnekes@student.matnat.uio.no,f.l.m.bernal@usit.uio.no
-    database_connection: "postgresql:///galaxy?host=/var/run/postgresql"
+    database_connection: "postgresql:///galaxy-dev?host=/var/run/postgresql"
     # changes made on 15 sept 2020
     #file_path: "/srv/galaxy_data"
-    file_path: "/storage/galaxy_data/files"
-    new_file_path: "/storage/galaxy_data/tmp"
-    template_cache_path: "/storage/galaxy_data/compiled_templates"
-    job_working_directory: "/storage/galaxy_data/jobs_directory"
+    file_path: "/storage/galaxy_dev_data/files"
+    new_file_path: "/storage/galaxy_dev_data/tmp"
+    template_cache_path: "/storage/galaxy_dev_data/compiled_templates"
+    job_working_directory: "/storage/galaxy_dev_data/jobs_directory"
     check_migrate_tools: false
     shed_tool_data_dir: "{{ galaxy_mutable_data_dir }}/tool-data"
     ## NEW 23 march added 'galaxy_tool_dependency_dir' to galaxy vars above 
@@ -76,7 +77,7 @@ galaxy_config: # from the galaxy tutorial
     error_email_to: 'geirkjetilsandve1+injbqoyi5aojs59jcqtz@boards.trello.com'
   uwsgi:
     # Default values
-    socket: 127.0.0.1:8080
+    socket: 127.0.0.1:8084
     buffer-size: 16384
     processes: 1
     threads: 4
@@ -105,8 +106,8 @@ galaxy_config: # from the galaxy tutorial
 
 ## Copy nginx conf files
 nginx_conf_files:
-  - src: "{{ nginx_conf_files_src_dir}}/immunohub.conf"
-    dest: "{{ nginx_custom_conf_files_dir}}/immunohub.conf"
+  - src: "{{ nginx_conf_files_src_dir}}/dev-immunohub.conf"
+    dest: "{{ nginx_custom_conf_files_dir}}/dev-immunohub.conf"
       
 
 # Automatically restart Galaxy by calling a handler named 'Restart
@@ -114,5 +115,5 @@ nginx_conf_files:
 
 # systemd
 galaxy_systemd_mode: mule
-galaxy_zergpool_listen_addr: 127.0.0.1:8080
+galaxy_zergpool_listen_addr: 127.0.0.1:8084
 galaxy_restart_handler_name: "Restart Galaxy"

@@ -21,10 +21,9 @@
       become_user: postgres
     - geerlingguy.pip
     - galaxyproject.galaxy
-    - nginx.rhel
-    - role: uchida.miniconda
       become: true
-      become_user: galaxy
+    - nginx.rhel
+      become: true
     - selinux.galaxy
     - usegalaxy_eu.galaxy_systemd
 
@@ -32,19 +31,19 @@
       
    # Check if database dir exists
     - name: Check if directory database exists
-      stat: path="/srv/galaxy/server/database/"
+      stat: path="/srv/galaxy-dev/server/database/"
       register: database_dir
 
    # Rename database dir to unused
     - name: Move database to database_unused
-      command: mv /srv/galaxy/server/database  /srv/galaxy/server/database_unused/
+      command: mv /srv/galaxy-dev/server/database  /srv/galaxy-dev/server/database_unused/
       when: database_dir.stat.exists
 
     # Create a link database pointing to /storage/galaxy_data instead of using database directory
     - name: Create a link database
       file:
-             src: /storage/galaxy_data/
-             dest:  /srv/galaxy/server/database
+             src: /storage/galaxy_dev_data/
+             dest:  /srv/galaxy_dev/server/database
              owner: galaxy
              group: galaxy
              state: link

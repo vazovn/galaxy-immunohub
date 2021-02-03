@@ -5,5 +5,5 @@
 
 - name: galaxy mule start
   systemd:
-      name: galaxy.service
+      name: galaxy-dev.service
       state: started
