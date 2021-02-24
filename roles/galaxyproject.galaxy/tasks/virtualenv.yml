@@ -10,9 +10,7 @@
     virtualenv: "{{ galaxy_venv_dir }}"
     extra_args: "{{ pip_extra_args | default('') }}"
     virtualenv_command: "{{ galaxy_virtualenv_command | default(pip_virtualenv_command | default(omit)) }}"
-    # Nikolay USIT
-    #virtualenv_python: python2.7
-    virtualenv_python: python3.6
+    virtualenv_python: "{{ galaxy_virtualenv_python | default(omit) }}"
   environment:
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
 

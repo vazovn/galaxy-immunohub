@@ -1,4 +1,4 @@
-module galaxy_selinux 1.0;
+module galaxy-dev_selinux 1.0;
 
 require {
 

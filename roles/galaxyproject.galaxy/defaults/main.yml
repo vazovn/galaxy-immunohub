@@ -91,17 +91,13 @@ galaxy_dirs:
   - "{{ galaxy_tool_dependency_dir }}"
   - "{{ galaxy_file_path }}"
   - "{{ galaxy_job_working_directory }}"
+
+# Directories to create as the privilege separated user if galaxy_manage_paths is enabled
+galaxy_privsep_dirs:
   - "{{ galaxy_venv_dir }}"
   - "{{ galaxy_server_dir }}"
   - "{{ galaxy_config_dir }}"
   - "{{ galaxy_local_tools_dir }}"
-
-# Directories to create as the privilege separated user if galaxy_manage_paths is enabled
-galaxy_privsep_dirs: {}
-  #- "{{ galaxy_venv_dir }}"
-  #- "{{ galaxy_server_dir }}"
-  #- "{{ galaxy_config_dir }}"
-  #- "{{ galaxy_local_tools_dir }}"
 
 # Local (relative to playbook) path to local tools
 galaxy_local_tools_src_dir: files/galaxy/tools
@@ -119,14 +115,17 @@ galaxy_dynamic_job_rules: []
 # Version control
 #
 
-# TODO: This needs to be read from Galaxy. Until we have a good solution for that, this is valid for 18.09 and older.
-galaxy_node_version: "9.11.1"
+# This is now automatically determined in tasks/_inc_node_version.yml, but it can be set to force a version
+#galaxy_node_version: "XX.YY.Z"
 
 # Where to clone Galaxy from. Backwards compatibility with galaxy_git_repo
 galaxy_repo: "{{ galaxy_git_repo | default('https://github.com/galaxyproject/galaxy.git') }}"
 
 # Automatically delete things in the repo that do not belong there
 galaxy_force_checkout: no
+
+# Git clone depth for the galaxy repository. Leave unset to ignore.
+#galaxy_clone_depth:
 
 # This can be a tag (as shown here) but doing so will cause the revision check task to always report "changed".
 # Backwards compatibility with galaxy_changeset_id.
@@ -145,10 +144,11 @@ galaxy_download_url: "{{ galaxy_repo | replace('.git', '') }}/archive/{{ galaxy_
 # List of tool configs to load
 galaxy_tool_config_files:
   - "{{ galaxy_server_dir }}/config/tool_conf.xml.sample"
-  - "{{ galaxy_shed_tool_conf_file }}"
 
-# The shed tool conf path is needed separate from the value of tool_conf for instantiation
+# The shed tool conf path is needed separate from the value of tool_conf for instantiation. The 'conf' version is a
+# legacy variable name and should not be used.
 galaxy_shed_tool_conf_file: "{{ galaxy_mutable_config_dir }}/shed_tool_conf.xml"
+galaxy_shed_tool_config_file: "{{ galaxy_shed_tool_conf_file }}"
 
 # The Python `requirements.txt` file that should be used to install Galaxy dependent modules using pip
 galaxy_requirements_file: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/pinned-requirements.txt"
@@ -157,9 +157,7 @@ galaxy_requirements_file: "{{ galaxy_server_dir }}/lib/galaxy/dependencies/pinne
 galaxy_static_dir: "{{ galaxy_server_dir }}/static"
 
 # Galaxy config file can either be 'ini-paste' (old style) or 'yaml'
-# Nikolay USIT
-#galaxy_config_style: "ini-paste"
-galaxy_config_style: "yaml"
+galaxy_config_style: "ini-paste"
 galaxy_config_file_basename: "galaxy.{{ 'yml' if galaxy_config_style in ('yaml', 'yml') else 'ini' }}"
 galaxy_config_file_template: "{{ galaxy_config_file_basename }}.j2"
 galaxy_config_file: "{{ galaxy_config_dir }}/{{ galaxy_config_file_basename }}"
@@ -187,6 +185,10 @@ galaxy_app_config_default:
   citation_cache_data_dir: "{{ galaxy_cache_dir }}/citations/data"
   citation_cache_lock_dir: "{{ galaxy_cache_dir }}/citations/locks"
   new_file_path: "{{ galaxy_mutable_data_dir }}/tmp"
+  mulled_resolution_cache_data_dir: "{{ galaxy_mutable_data_dir }}/mulled/data"
+  mulled_resolution_cache_lock_dir: "{{ galaxy_mutable_data_dir }}/mulled/lock"
+  tool_cache_data_dir: "{{ galaxy_cache_dir }}/tool_cache"
+  tool_search_index_dir: "{{ galaxy_cache_dir }}/tool_search_index"
 
   # Mutable config files
   integrated_tool_panel_config: "{{ galaxy_mutable_config_dir }}/integrated_tool_panel.xml"
@@ -201,6 +203,7 @@ galaxy_app_config_default:
 
   # Static config files
   tool_config_file: "{{ galaxy_tool_config_files | join(',') }}"
+  shed_tool_config_file: "{{ galaxy_shed_tool_config_file }}"
 
   # Everything else
   visualization_plugins_directory: "config/plugins/visualizations"
@@ -209,22 +212,17 @@ galaxy_app_config_default:
 galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_config_default}) }}"
 galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
 
-# Automatically instantiate mutable config files if they don't exist (dest will not be overwritten if it exists)
-galaxy_mutable_configs:
-  - src: "{{ galaxy_server_dir }}/config/shed_tool_conf.xml.sample"
-    dest: "{{ galaxy_shed_tool_conf_file }}"
-  - src: "{{ galaxy_server_dir }}/config/migrated_tools_conf.xml.sample"
-    dest: "{{ galaxy_config_merged[galaxy_app_config_section].migrated_tools_config }}"
-  - src: "{{ galaxy_server_dir }}/config/shed_data_manager_conf.xml.sample"
+# Automatically instantiate mutable config files from copies in role if they don't exist
+galaxy_mutable_config_files:
+  - src: "shed_data_manager_conf.xml"
     dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_data_manager_config_file }}"
-  - src: "{{ galaxy_server_dir }}/config/shed_tool_data_table_conf.xml.sample"
+  - src: "shed_tool_data_table_conf.xml"
     dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_tool_data_table_config }}"
-    
-# Nikolay    
-# Automatically set start pages
-galaxy_default_start_welcome:
-  - src: "{{ galaxy_server_dir }}/static/welcome.html.immunohub"
-    dest: "{{ galaxy_server_dir }}/static/welcome.html"
+galaxy_mutable_config_templates:
+  - src: "shed_tool_conf.xml.j2"
+    dest: "{{ galaxy_config_merged[galaxy_app_config_section].migrated_tools_config }}"
+  - src: "shed_tool_conf.xml.j2"
+    dest: "{{ galaxy_shed_tool_config_file }}"
 
 galaxy_config_error_email_to: "{{ galaxy_config_merged[galaxy_app_config_section].error_email_to | default('') }}"
 galaxy_config_instance_resource_url: "{{ galaxy_config_merged[galaxy_app_config_section].instance_resource_url | default('') }}"
@@ -266,6 +264,15 @@ galaxy_uwsgi_config_default:
 # Client build settings
 #
 
-# Options include: client / client-production / client-production-maps (default)
+# Options include: client / client-production / client-production-maps (default). Set to null to invoke each step of the
+# build separately, but this is not guaranteed to work for all version of Galaxy - using `make` is the safer choice.
 galaxy_client_make_target: client-production-maps
+galaxy_client_build_steps:
+  default:
+    - client
+    - plugins
+  "19.09":
+    - fonts
+    - stageLibs
+    - plugins
 

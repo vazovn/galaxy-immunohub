@@ -1,0 +1,71 @@
+- hosts: immunohub_server
+  become: true
+  pre_tasks:
+    - name: Install Dependencies
+      package:
+        name: ['git', 'make', 'python3-psycopg2', 'python3-virtualenv.noarch', 'bzip2', 'gcc', 'python3-lxml']
+    - name: Print ansible_os_family
+      debug: var=ansible_os_family
+         
+  # systemd      
+  handlers:
+    - name: Restart Galaxy
+      systemd:
+        name: galaxy
+        state: restarted
+        
+  roles:
+#    - galaxyproject.postgresql
+    - role: natefoo.postgresql_objects
+      become: true
+      become_user: postgres
+    - geerlingguy.pip
+    - role: galaxyproject.galaxy
+      become: true
+    - role: dev_immunohub.customized.galaxy
+      become: true
+    - role: nginx.rhel
+      become: true
+    - selinux.galaxy
+    - usegalaxy_eu.galaxy_systemd
+
+  post_tasks:
+      
+   # Check if database dir exists
+    - name: Check if directory database exists
+      stat: path="/srv/galaxy-dev/server/database/"
+      register: database_dir
+
+   # Rename database dir to unused
+    - name: Move database to database_unused
+      command: mv /srv/galaxy-dev/server/database  /srv/galaxy-dev/server/database_unused/
+      when: database_dir.stat.exists
+
+    # Create a link database pointing to /storage/galaxy_data instead of using database directory
+    - name: Create a link database
+      become: true
+      file:
+             src: /storage/galaxy_dev_data/
+             dest:  /srv/galaxy-dev/server/database
+             owner: galaxy
+             group: galaxy
+             state: link
+
+    # Change ownership
+    - name: Change galaxy data folder ownership
+      become: true
+      command: "chown -R galaxy:galaxy /storage/galaxy_dev_data/"
+      changed_when: false      
+      
+    - name: Change galaxy data folder mode
+      become: true
+      command: "chmod -R 775 /storage/galaxy_dev_data/"
+         
+    - name: Change galaxy server folder ownership
+      become: true
+      command: "chown -R galaxy:galaxy /srv/galaxy-dev/"
+      changed_when: false
+
+    - name: Change galaxy server folder mode
+      become: true
+      command: "chmod -R 775 /srv/galaxy-dev/"

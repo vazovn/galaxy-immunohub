@@ -1,0 +1,18 @@
+---
+    
+- name: Copy and set welcome page
+  block:
+
+    - name: Copy the Immunohub customized welcome page
+      copy: 
+           src: "{{ welcome_file_src_dir }}/welcome.html.immunohub"
+           dest: "{{ galaxy_server_dir }}/static/welcome.html.immunohub"
+
+    - name: Set default welcome page
+      command: cp "{{ galaxy_server_dir }}/static/welcome.html.immunohub" "{{ galaxy_server_dir }}/static/welcome.html"
+
+
+  remote_user: "{{ galaxy_remote_users.root | default(omit) }}"
+  become: "{{ true if galaxy_become_users.root is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.root | default(ansible_user_id) }}"    
+    

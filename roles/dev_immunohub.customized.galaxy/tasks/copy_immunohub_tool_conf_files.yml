@@ -1,0 +1,11 @@
+---
+    
+- name: Copy immunohub tool conf file file
+  copy: 
+       src: "{{ immunohub_src_xml_files }}/"
+       dest: "{{ immunohub_target_xml_files }}"
+
+    
+  remote_user: "{{ galaxy_remote_users.root | default(omit) }}"
+  become: "{{ true if galaxy_become_users.root is defined else __galaxy_become }}"
+  become_user: "{{ galaxy_become_users.root | default(ansible_user_id) }}"    

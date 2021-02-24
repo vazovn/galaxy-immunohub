@@ -9,6 +9,12 @@ ansible_user: "nikolaiv"
 ansible_become_method: sudo
 ansible_become_pass: "{{ immunohub_server_sudo_pass }}"
 
+
+# Python 3 support
+pip_virtualenv_command: /usr/bin/python3 -m virtualenv 
+pip_package: python3-pip
+
+
 # PostgreSQL
 postgresql_objects_users:
   - name: galaxy
@@ -40,12 +46,23 @@ miniconda_version: "4.6.14"
 
 # NGINX files
 nginx_custom_conf_files_dir: /etc/nginx/conf.d
-nginx_conf_files_src_dir: files/nginx
+nginx_conf_files_src_dir: files/nginx/
+
+# == The fillowing files are copied by the role dev_immunohub.customzed.galaxy
+# Shed tool files :
+galaxy_shed_tool_src_xml_files: files/shed_tool_files/ 
+galaxy_shed_tool_target_xml_files: "{{ galaxy_root }}/var/config"
+# welcome page file
+welcome_file_src_dir : files/welcome_file/
+welcome_file_target_dir : "{{ galaxy_server_dir }}/static"
+# immunohub_tool_conf.xml file
+immunohub_src_xml_files: files/galaxy_original_tool_files/
+immunohub_target_xml_files: "{{ galaxy_server_dir }}/config"
 
 galaxy_config: # from the galaxy tutorial
   galaxy:
     brand: "Immunohub dev instance"
-    admin_users: vazovn@abv.bg,nikolaiv@uio.no,n.a.vazov@usit.uio.no,radmilko@ifi.uio.no,milenpa@student.matnat.uio.no,lonnekes@student.matnat.uio.no,f.l.m.bernal@usit.uio.no
+    admin_users: vazovn@abv.bg,nikolaiv@uio.no,n.a.vazov@usit.uio.no,milenpa@student.matnat.uio.no,lonnekes@student.matnat.uio.no,f.l.m.bernal@usit.uio.no
     database_connection: "postgresql:///galaxy-dev?host=/var/run/postgresql"
     # changes made on 15 sept 2020
     #file_path: "/srv/galaxy_data"
@@ -78,7 +95,7 @@ galaxy_config: # from the galaxy tutorial
   uwsgi:
     # Default values
     socket: 127.0.0.1:8084
-    buffer-size: 16384
+    buffer-size: 32768
     processes: 1
     threads: 4
     offload-threads: 2
@@ -96,6 +113,12 @@ galaxy_config: # from the galaxy tutorial
     hook-master-start:
       - unix_signal:2 gracefully_kill_them_all
       - unix_signal:15 gracefully_kill_them_all
+    
+    # Feature necessary for proper mule signal handling on Python versions
+    # below 3.7.2. The default is set to false to prevent a runtime error
+    # under Python 3.7.2 and newer (see
+    # https://github.com/unbit/uwsgi/issues/1978).
+    #py-call-osafterfork: false
     py-call-osafterfork: true
     enable-threads: true
     # Our additions
@@ -104,11 +127,6 @@ galaxy_config: # from the galaxy tutorial
       - lib/galaxy/main.py
     farm: job-handlers:1,2
 
-## Copy nginx conf files
-nginx_conf_files:
-  - src: "{{ nginx_conf_files_src_dir}}/dev-immunohub.conf"
-    dest: "{{ nginx_custom_conf_files_dir}}/dev-immunohub.conf"
-      
 
 # Automatically restart Galaxy by calling a handler named 'Restart
 # Galaxy', whenever the server changes.

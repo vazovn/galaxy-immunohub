@@ -4,7 +4,7 @@ galaxy_info:
   description: Install and manage a Galaxy (http://galaxyproject.org/) server.
   company: The Galaxy Project
   license: AFL v3.0
-  min_ansible_version: 2.5
+  min_ansible_version: 2.7
   platforms:
   - name: EL
     versions:
@@ -42,7 +42,7 @@ galaxy_info:
   - name: Debian
     versions:
     - all
-  categories:
+  galaxy_tags:
   - system
   - web
 dependencies: []

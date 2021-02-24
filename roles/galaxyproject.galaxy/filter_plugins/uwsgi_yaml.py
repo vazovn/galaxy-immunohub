@@ -22,10 +22,10 @@ def _iter_values(k, v):
             raise AnsibleError(
                 "to_uwsgi_yaml value of '%s' must be a list (is type: %s, value: %s)" % (k, type(v), str(v)))
         vi = iter(v)
-        yield {k: vi.next()}
+        yield {k: next(vi)}
         for i in vi:
             # Recurse for logic block members containing lists
-            for _i in _iter_values(*(i.items()[0])):
+            for _i in _iter_values(*(list(i.items())[0])):
                 yield _i
         yield {'end' + k.split('-', 1)[0]: 'null'}
     elif isinstance(v, list):
@@ -46,13 +46,13 @@ def _iter_options(a):
             yield (k, a[k])
     elif isinstance(a, list):
         for i in a:
-            yield i.items()[0]
+            yield list(i.items())[0]
     else:
         raise AnsibleError(
             "|to_uwsgi_yaml value must be a dictionary (hash) or list (is type: %s, value: %s)" % (type(a), str(a)))
 
 
-def to_uwsgi_yaml(a, indent=4, *args, **kwargs):
+def to_uwsgi_yaml(a, indent=4, width=9999, *args, **kwargs):
     # uWSGI's internal YAML parser is not real YAML - all values are expected to be strings, and lists are created by
     # repeating keys
     if not isinstance(a, dict):
@@ -63,7 +63,7 @@ def to_uwsgi_yaml(a, indent=4, *args, **kwargs):
         items = []
         for k, v in _iter_options(pv):
             for d in _iter_values(k, v):
-                items.append(_strip_quotes(to_nice_yaml(d, indent=indent, *args, **kwargs)))
+                items.append(_strip_quotes(to_nice_yaml(d, indent=indent, width=width, *args, **kwargs)))
         r.append((' ' * indent).join(items))
     return (':\n' + ' ' * indent).join(r)
 

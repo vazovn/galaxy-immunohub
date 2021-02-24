@@ -1,0 +1,18 @@
+---
+
+# Customize Galaxy
+    
+- name: Include customized welcome page
+  include_tasks: copy_welcome_page.yml
+  when: galaxy_manage_static_setup
+  tags: galaxy_welcome_page
+
+- name: Include copy shed tool files
+  include_tasks: copy_shed_tool_files.yml
+  when: galaxy_manage_static_setup
+  tags: galaxy_manage_static_setup
+
+- name: Include copy immunohub tool conf files
+  include_tasks: copy_immunohub_tool_conf_files.yml
+  when: galaxy_manage_static_setup
+  tags: galaxy_manage_static_setup

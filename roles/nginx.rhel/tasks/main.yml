@@ -6,12 +6,10 @@
   notify:
     - start nginx
         
-# Copy nginx conf files
-- name: Install nginx conf files
-  copy:
-      src: "{{ item.src }}"
-      dest: "{{ item.dest }}"
-  with_items: "{{ nginx_conf_files }}"
+- name: Copy nginx conf files
+  copy: 
+       src: "{{ nginx_conf_files_src_dir}}/"
+       dest: "{{ nginx_custom_conf_files_dir }}"
   
 # Restart nginx
 - name: Restart nginx
