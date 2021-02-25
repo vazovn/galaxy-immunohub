@@ -2,4 +2,4 @@
 
 Order certificates for 
 
-dev-immunohub.uio.no
+dev-galaxy.immunohub.uio.no
