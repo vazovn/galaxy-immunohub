@@ -27,29 +27,11 @@
     - role: nginx.rhel
       become: true
     - selinux.galaxy
+    - role: manage.db.directory.galaxy
+      become: true
     - usegalaxy_eu.galaxy_systemd
 
   post_tasks:
-      
-   # Check if database dir exists
-    - name: Check if directory database exists
-      stat: path="/srv/galaxy-dev/server/database/"
-      register: database_dir
-
-   # Rename database dir to unused
-    - name: Move database to database_unused
-      command: mv /srv/galaxy-dev/server/database  /srv/galaxy-dev/server/database_unused/
-      when: database_dir.stat.exists
-
-    # Create a link database pointing to /storage/galaxy_data instead of using database directory
-    - name: Create a link database
-      become: true
-      file:
-             src: /storage/galaxy_dev_data/
-             dest:  /srv/galaxy-dev/server/database
-             owner: galaxy
-             group: galaxy
-             state: link
 
     # Change ownership
     - name: Change galaxy data folder ownership
