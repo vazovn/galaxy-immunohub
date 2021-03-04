@@ -61,7 +61,7 @@ immunohub_target_xml_files: "{{ galaxy_server_dir }}/config"
 
 galaxy_config: # from the galaxy tutorial
   galaxy:
-    brand: "Immunohub dev instance"
+    brand: "Immunohub DEVELOPMENT"
     admin_users: vazovn@abv.bg,nikolaiv@uio.no,n.a.vazov@usit.uio.no,milenpa@student.matnat.uio.no,lonnekes@student.matnat.uio.no,f.l.m.bernal@usit.uio.no
     database_connection: "postgresql:///galaxy-dev?host=/var/run/postgresql"
     # changes made on 15 sept 2020

@@ -1,0 +1,21 @@
+---
+## Manage the directory server/database
+
+# Check if database dir exists
+- name: Check if directory database exists
+  stat: path="/srv/galaxy-dev/server/database/"
+  register: database_dir
+      
+   # Delete database dir if the command above fails to do it
+- name: Remove database directory
+  command: rm -rf /srv/galaxy-dev/server/database
+  when: database_dir.stat.exists
+
+    # Create a link database pointing to /storage/galaxy_dev_data instead of using database directory
+- name: Create a link database
+  file:
+      src: /storage/galaxy_dev_data/
+      dest:  /srv/galaxy-dev/server/database
+      owner: galaxy
+      group: galaxy
+      state: link

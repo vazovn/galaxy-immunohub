@@ -213,16 +213,27 @@ galaxy_config_default: "{{ {} | combine({galaxy_app_config_section: galaxy_app_c
 galaxy_config_merged: "{{ galaxy_config_default | combine(galaxy_config | default({}), recursive=True) }}"
 
 # Automatically instantiate mutable config files from copies in role if they don't exist
+#galaxy_mutable_config_files:
+  #- src: "shed_data_manager_conf.xml"
+    #dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_data_manager_config_file }}"
+  #- src: "shed_tool_data_table_conf.xml"
+    #dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_tool_data_table_config }}"
+#galaxy_mutable_config_templates:
+  #- src: "shed_tool_conf.xml.j2"
+    #dest: "{{ galaxy_config_merged[galaxy_app_config_section].migrated_tools_config }}"
+  #- src: "shed_tool_conf.xml.j2"
+    #dest: "{{ galaxy_shed_tool_config_file }}"
+
 galaxy_mutable_config_files:
-  - src: "shed_data_manager_conf.xml"
+  - src: "{{ galaxy_shed_tool_src_xml_files }}/shed_tool_conf.xml"
+    dest: "{{ galaxy_shed_tool_conf_file }}"
+  - src: "{{ galaxy_shed_tool_src_xml_files }}/shed_data_manager_conf.xml"
     dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_data_manager_config_file }}"
-  - src: "shed_tool_data_table_conf.xml"
+  - src: "{{ galaxy_shed_tool_src_xml_files }}/shed_tool_data_table_conf.xml"
     dest: "{{ galaxy_config_merged[galaxy_app_config_section].shed_tool_data_table_config }}"
-galaxy_mutable_config_templates:
-  - src: "shed_tool_conf.xml.j2"
+  - src: "{{ galaxy_shed_tool_src_xml_files }}/migrated_tools_conf.xml"
     dest: "{{ galaxy_config_merged[galaxy_app_config_section].migrated_tools_config }}"
-  - src: "shed_tool_conf.xml.j2"
-    dest: "{{ galaxy_shed_tool_config_file }}"
+    
 
 galaxy_config_error_email_to: "{{ galaxy_config_merged[galaxy_app_config_section].error_email_to | default('') }}"
 galaxy_config_instance_resource_url: "{{ galaxy_config_merged[galaxy_app_config_section].instance_resource_url | default('') }}"
